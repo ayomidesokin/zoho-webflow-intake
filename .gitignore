@@ -1,0 +1,11 @@
+# secrets — never commit
+.env
+
+# fetched/live artifacts (source of truth is v4-generic-intake.json only)
+blueprints/v4-generic-intake.live.json
+blueprints/backups/
+
+# noise
+__pycache__/
+*.pyc
+.DS_Store

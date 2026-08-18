@@ -1,0 +1,2621 @@
+{
+  "flow": [
+    {
+      "id": 1,
+      "mapper": {},
+      "module": "webflow:watchSites",
+      "version": 2,
+      "metadata": {
+        "designer": {
+          "x": -133,
+          "y": 0
+        }
+      },
+      "parameters": {
+        "__IMTHOOK__": 4136798
+      }
+    },
+    {
+      "id": 2,
+      "mapper": {
+        "name": "submission_id",
+        "scope": "roundtrip",
+        "value": "{{uuid}}"
+      },
+      "module": "util:SetVariable2",
+      "version": 1,
+      "metadata": {
+        "designer": {
+          "x": 136,
+          "y": -1
+        }
+      },
+      "parameters": {}
+    },
+    {
+      "id": 3,
+      "mapper": {
+        "filter": [
+          [
+            {
+              "a": "match",
+              "b": "{{ifempty(get(1.data; \"Campaign name\"); 1.name)}}",
+              "o": "array:contain"
+            }
+          ]
+        ]
+      },
+      "module": "datastore:SearchRecord",
+      "version": 1,
+      "metadata": {
+        "designer": {
+          "x": 390,
+          "y": 0
+        }
+      },
+      "parameters": {
+        "limit": 1,
+        "datastore": 163354,
+        "continueWhenNoRes": true
+      }
+    },
+    {
+      "id": 4,
+      "mapper": null,
+      "module": "builtin:BasicRouter",
+      "routes": [
+        {
+          "flow": [
+            {
+              "id": 5,
+              "filter": {
+                "name": "No config for form",
+                "conditions": [
+                  [
+                    {
+                      "a": "{{3.data.active}}",
+                      "b": "true",
+                      "o": "text:notequal"
+                    }
+                  ]
+                ]
+              },
+              "mapper": {
+                "key": "{{2.submission_id}}",
+                "data": {
+                  "email": "{{lower(trim(1.data.Email))}}",
+                  "action": "no_config",
+                  "status": "error",
+                  "form_key": "",
+                  "form_name": "{{1.name}}",
+                  "raw_payload": "{{toString(1.data)}}",
+                  "received_at": "{{1.submittedAt}}",
+                  "zoho_module": "",
+                  "error_message": "No active config matched form: {{1.name}}",
+                  "submission_id": "{{2.submission_id}}",
+                  "zoho_record_id": "",
+                  "unmapped_fields": "",
+                  "normalized_payload": ""
+                },
+                "overwrite": true
+              },
+              "module": "datastore:AddRecord",
+              "version": 1,
+              "metadata": {
+                "designer": {
+                  "x": 900,
+                  "y": -300
+                }
+              },
+              "parameters": {
+                "datastore": 163356
+              }
+            }
+          ]
+        },
+        {
+          "flow": [
+            {
+              "id": 6,
+              "filter": {
+                "name": "Config found",
+                "conditions": [
+                  [
+                    {
+                      "a": "{{3.data.form_key}}",
+                      "o": "exist"
+                    },
+                    {
+                      "a": "{{3.data.active}}",
+                      "b": "true",
+                      "o": "text:equal"
+                    }
+                  ]
+                ]
+              },
+              "mapper": {
+                "limit": "1",
+                "filter": [
+                  [
+                    {
+                      "a": "Email",
+                      "b": "{{lower(trim(1.data.Email))}}",
+                      "o": "text:equals"
+                    }
+                  ]
+                ],
+                "module": "Contacts",
+                "approved": "true"
+              },
+              "module": "zohocrm:searchObjects",
+              "onerror": [
+                {
+                  "id": 600,
+                  "module": "builtin:Ignore",
+                  "version": 1,
+                  "metadata": {
+                    "designer": {
+                      "x": 900,
+                      "y": 300
+                    }
+                  }
+                }
+              ],
+              "version": 3,
+              "metadata": {
+                "designer": {
+                  "x": 900,
+                  "y": 100
+                }
+              },
+              "parameters": {
+                "__IMTCONN__": 13660469
+              }
+            },
+            {
+              "id": 7,
+              "mapper": null,
+              "module": "builtin:BasicRouter",
+              "routes": [
+                {
+                  "flow": [
+                    {
+                      "id": 8,
+                      "filter": {
+                        "name": "Contact found",
+                        "conditions": [
+                          [
+                            {
+                              "a": "{{6.id}}",
+                              "o": "exist"
+                            }
+                          ]
+                        ]
+                      },
+                      "mapper": {
+                        "id": "{{6.id}}",
+                        "Email": "{{lower(trim(1.data.Email))}}",
+                        "Phone": "{{1.data.`Phone country code`}}{{1.data.`Phone number`}}",
+                        "module": "Contacts",
+                        "Country": "{{ifempty(1.data.Country; 1.data.country_of_incorporation)}}",
+                        "Website": "{{ifempty(1.data.Website; 1.data.`Company website`)}}",
+                        "Industry": "{{1.data.Industry}}",
+                        "UTM_Term": "{{1.data.utm_campaign}}",
+                        "sendNull": false,
+                        "GCLID_NEW": "{{1.data.gclid}}",
+                        "Last_Name": "{{ifempty(1.data.`Last name`; 1.data.last_name)}}",
+                        "First_Name": "{{ifempty(1.data.`First name`; 1.data.first_name; 1.data.name)}}",
+                        "UTM_Medium": "{{1.data.utm_medium}}",
+                        "Designation": "{{1.data.Position}}",
+                        "Lead_Source": "{{ifempty(get(1.data; \"Lead Source\"); 3.data.lead_source)}}",
+                        "UTM_Channel": "{{1.data.utm_source}}",
+                        "URL_Referrer": "{{1.data.url_referrer}}",
+                        "Plan_for_Sokin": "{{if(1.data.`checkbox-sokin-plan-input`; split(1.data.`checkbox-sokin-plan-input`; \", \"); emptyarray)}}",
+                        "Primary_use_case": "{{ifempty(1.data.`Major use`; 1.data.main_usecase; 1.data.`Main use case for forwards`)}}",
+                        "Average_tenor_months": "{{ifempty(1.data.`Average tenor`; 1.data.average_tenor_months)}}",
+                        "Average_forward_value": "{{ifempty(1.data.`Average forward value`; 1.data.average_forward_value)}}",
+                        "Most_important_feature": "{{ifempty(1.data.Features; 1.data.most_important_features)}}",
+                        "Main_use_case_for_forwards": "{{ifempty(1.data.`Main use case for forwards`; 1.data.main_usecase)}}",
+                        "Primary_stablecoin_use_case": "{{ifempty(get(1.data; \"Primary stablecoin use case\"); 1.data.primary_stablecoin_use_case)}}",
+                        "Existing_business_card_provider": "{{ifempty(1.data.`Use business card`; 1.data.current_provider)}}",
+                        "Monthly_cross_border_card_spend": "{{ifempty(1.data.`Monthly card spend`; 1.data.monthly_crossboarder_spend)}}",
+                        "No_of_forwards_booked_each_month": "{{ifempty(1.data.`Number of forwards booked`; 1.data.forwards_booked_per_month)}}",
+                        "Estimated_annual_stablecoin_transaction_volume": "{{ifempty(get(1.data; \"Estimated annual stablecoin transaction volume\"); 1.data.estimated_annual_stablecoin_volume)}}"
+                      },
+                      "module": "zohocrm:updateObject",
+                      "onerror": [
+                        {
+                          "id": 601,
+                          "module": "builtin:Ignore",
+                          "version": 1,
+                          "metadata": {
+                            "designer": {
+                              "x": 1479,
+                              "y": -429
+                            }
+                          }
+                        }
+                      ],
+                      "version": 3,
+                      "metadata": {
+                        "expect": [
+                          {
+                            "name": "module",
+                            "type": "select",
+                            "label": "Module"
+                          },
+                          {
+                            "name": "trigger",
+                            "type": "select",
+                            "label": "Trigger",
+                            "multiple": true,
+                            "validate": {
+                              "enum": [
+                                "workflow",
+                                "approval",
+                                "blueprint"
+                              ]
+                            }
+                          },
+                          {
+                            "name": "Company",
+                            "type": "text",
+                            "validate": {
+                              "max": 200
+                            }
+                          },
+                          {
+                            "name": "First_Name",
+                            "type": "text",
+                            "label": "First Name",
+                            "validate": {
+                              "max": 40
+                            }
+                          },
+                          {
+                            "name": "Last_Name",
+                            "type": "text",
+                            "label": "Last Name",
+                            "validate": {
+                              "max": 80
+                            }
+                          },
+                          {
+                            "name": "Phone",
+                            "type": "text",
+                            "validate": {
+                              "max": 30
+                            }
+                          },
+                          {
+                            "name": "Website",
+                            "type": "url",
+                            "validate": {
+                              "max": 255
+                            }
+                          },
+                          {
+                            "name": "Lead_Source",
+                            "type": "select",
+                            "label": "Lead Source"
+                          },
+                          {
+                            "name": "Owner",
+                            "type": "text",
+                            "label": "Lead Owner",
+                            "validate": {
+                              "max": 120
+                            }
+                          },
+                          {
+                            "name": "Designation",
+                            "type": "text",
+                            "label": "Title",
+                            "validate": {
+                              "max": 100
+                            }
+                          },
+                          {
+                            "name": "Email",
+                            "type": "email",
+                            "validate": {
+                              "max": 100
+                            }
+                          },
+                          {
+                            "name": "Mobile",
+                            "type": "text",
+                            "validate": {
+                              "max": 30
+                            }
+                          },
+                          {
+                            "name": "Lead_Status",
+                            "type": "select",
+                            "label": "Lead Status"
+                          },
+                          {
+                            "name": "Industry",
+                            "type": "select"
+                          },
+                          {
+                            "name": "Email_Opt_Out",
+                            "type": "boolean",
+                            "label": "Email Opt Out",
+                            "validate": {
+                              "max": 5
+                            }
+                          },
+                          {
+                            "name": "Salutation",
+                            "type": "select"
+                          },
+                          {
+                            "name": "Secondary_Email",
+                            "type": "email",
+                            "label": "Secondary Email",
+                            "validate": {
+                              "max": 100
+                            }
+                          },
+                          {
+                            "name": "Currency",
+                            "type": "select"
+                          },
+                          {
+                            "name": "Exchange_Rate",
+                            "type": "text",
+                            "label": "Exchange Rate",
+                            "validate": {
+                              "max": 19
+                            }
+                          },
+                          {
+                            "name": "Country",
+                            "type": "text",
+                            "validate": {
+                              "max": 100
+                            }
+                          },
+                          {
+                            "name": "Description",
+                            "type": "text",
+                            "validate": {
+                              "max": 32000
+                            }
+                          },
+                          {
+                            "name": "Partner_Name",
+                            "type": "text",
+                            "label": "Partner Name",
+                            "validate": {
+                              "max": 120
+                            }
+                          },
+                          {
+                            "name": "Plan_for_Sokin",
+                            "type": "select",
+                            "label": "Plan for Sokin",
+                            "multiple": true
+                          },
+                          {
+                            "name": "Annual_turnover",
+                            "type": "select",
+                            "label": "Annual turnover"
+                          },
+                          {
+                            "name": "UTM_Channel",
+                            "type": "text",
+                            "label": "UTM Channel",
+                            "validate": {
+                              "max": 255
+                            }
+                          },
+                          {
+                            "name": "UTM_Term",
+                            "type": "text",
+                            "label": "UTM Term",
+                            "validate": {
+                              "max": 255
+                            }
+                          },
+                          {
+                            "name": "UTM_Medium",
+                            "type": "text",
+                            "label": "UTM Medium",
+                            "validate": {
+                              "max": 255
+                            }
+                          },
+                          {
+                            "name": "Referral_via",
+                            "type": "text",
+                            "label": "Referral via",
+                            "validate": {
+                              "max": 255
+                            }
+                          },
+                          {
+                            "name": "Years_of_Trading",
+                            "type": "select",
+                            "label": "Years of Trading"
+                          },
+                          {
+                            "name": "Sokin_Minimum_Commitment_fx",
+                            "type": "select",
+                            "label": "Sokin Minimum Commitment  fx"
+                          },
+                          {
+                            "name": "Region",
+                            "type": "select"
+                          },
+                          {
+                            "name": "FX_Volume_Range",
+                            "type": "text",
+                            "label": "FX Volume Range",
+                            "validate": {
+                              "max": 255
+                            }
+                          },
+                          {
+                            "name": "Fixed_Margin_Offered",
+                            "type": "text",
+                            "label": "Fixed Margin Offered",
+                            "validate": {
+                              "max": 16
+                            }
+                          },
+                          {
+                            "name": "Minimum_FX_commitment",
+                            "type": "number",
+                            "label": "Minimum FX commitment ($)"
+                          },
+                          {
+                            "name": "Appointment_Request",
+                            "type": "text",
+                            "label": "Appointment Request",
+                            "validate": {
+                              "max": 255
+                            }
+                          },
+                          {
+                            "name": "How_did_you_hear_about_us",
+                            "type": "text",
+                            "label": "How did you hear about us?",
+                            "validate": {
+                              "max": 255
+                            }
+                          },
+                          {
+                            "name": "Domestic_Transaction_ATV",
+                            "type": "number",
+                            "label": "Domestic Transaction ATV"
+                          },
+                          {
+                            "name": "Custom_Rate_Request",
+                            "type": "text",
+                            "label": "Custom Rate Request",
+                            "validate": {
+                              "max": 255
+                            }
+                          },
+                          {
+                            "name": "eCommerce_Plugin",
+                            "type": "select",
+                            "label": "eCommerce Plugin"
+                          },
+                          {
+                            "name": "GCLID_NEW",
+                            "type": "text",
+                            "label": "GCLID NEW",
+                            "validate": {
+                              "max": 255
+                            }
+                          },
+                          {
+                            "name": "Ava_communication_count",
+                            "type": "number",
+                            "label": "Ava communication count"
+                          },
+                          {
+                            "name": "Ava_activated",
+                            "type": "select",
+                            "label": "Ava activated"
+                          },
+                          {
+                            "name": "Escalation_conversation_count",
+                            "type": "number",
+                            "label": "Escalation conversation count"
+                          },
+                          {
+                            "name": "Is_escalated",
+                            "type": "select",
+                            "label": "Is escalated"
+                          },
+                          {
+                            "name": "Monthly_transactions",
+                            "type": "text",
+                            "label": "Monthly transactions",
+                            "validate": {
+                              "max": 255
+                            }
+                          },
+                          {
+                            "name": "Online_revenue",
+                            "type": "text",
+                            "label": "Online revenue",
+                            "validate": {
+                              "max": 255
+                            }
+                          },
+                          {
+                            "name": "Payment_Capabilities",
+                            "type": "select",
+                            "label": "Payment Capabilities",
+                            "multiple": true
+                          },
+                          {
+                            "name": "International_visits",
+                            "type": "text",
+                            "label": "International visits",
+                            "validate": {
+                              "max": 255
+                            }
+                          },
+                          {
+                            "name": "Linkedin_URL",
+                            "type": "text",
+                            "label": "Linkedin URL",
+                            "validate": {
+                              "max": 255
+                            }
+                          },
+                          {
+                            "name": "Forward_Contract",
+                            "type": "boolean",
+                            "label": "Forward Contract",
+                            "validate": {
+                              "max": 5
+                            }
+                          },
+                          {
+                            "name": "Deactivate_Ava",
+                            "type": "boolean",
+                            "label": "Deactivate Ava",
+                            "validate": {
+                              "max": 5
+                            }
+                          },
+                          {
+                            "name": "gotowebinar__Number_of_Employees",
+                            "type": "text",
+                            "label": "Number of Employees",
+                            "validate": {
+                              "max": 255
+                            }
+                          },
+                          {
+                            "name": "gotowebinar__Purchasing_Role",
+                            "type": "text",
+                            "label": "Purchasing Role",
+                            "validate": {
+                              "max": 255
+                            }
+                          },
+                          {
+                            "name": "gotowebinar__Purchasing_Time_Frame",
+                            "type": "text",
+                            "label": "Purchasing Time Frame",
+                            "validate": {
+                              "max": 255
+                            }
+                          },
+                          {
+                            "name": "gotowebinar__Questions_Comments",
+                            "type": "text",
+                            "label": "Questions & Comments",
+                            "validate": {
+                              "max": 255
+                            }
+                          },
+                          {
+                            "name": "Additional_Use_of_Sokin",
+                            "type": "select",
+                            "label": "Additional Use of Sokin",
+                            "multiple": true
+                          },
+                          {
+                            "name": "Other_Use_of_Sokin",
+                            "type": "text",
+                            "label": "Other Use of Sokin",
+                            "validate": {
+                              "max": 255
+                            }
+                          },
+                          {
+                            "name": "Status_Synced_to_Markting_Automation",
+                            "time": false,
+                            "type": "date",
+                            "label": "Date Moved to Dashboard Access",
+                            "validate": {
+                              "max": 20
+                            }
+                          },
+                          {
+                            "name": "Meeting_Status",
+                            "type": "select",
+                            "label": "Meeting Status"
+                          },
+                          {
+                            "name": "Lead_Campaign_Source",
+                            "type": "text",
+                            "label": "Lead Campaign Source",
+                            "validate": {
+                              "max": 120
+                            }
+                          },
+                          {
+                            "name": "Acquisition_channel",
+                            "type": "select",
+                            "label": "Acquisition channel"
+                          },
+                          {
+                            "name": "Landing_Page",
+                            "type": "url",
+                            "label": "Landing Page",
+                            "validate": {
+                              "max": 450
+                            }
+                          },
+                          {
+                            "name": "Last_Call_Outcome_JustCall",
+                            "type": "text",
+                            "label": "Last Call Outcome (JustCall)",
+                            "validate": {
+                              "max": 255
+                            }
+                          },
+                          {
+                            "name": "Last_Missed_Call_Voicemail_JustCall",
+                            "time": true,
+                            "type": "date",
+                            "label": "Last Missed Call / Voicemail (JustCall)",
+                            "validate": {
+                              "max": 120
+                            }
+                          },
+                          {
+                            "name": "Lead_Associated_BDM",
+                            "spec": {
+                              "name": "value",
+                              "type": "text"
+                            },
+                            "type": "array",
+                            "label": "Lead - Associated BDM",
+                            "validate": {
+                              "max": 20
+                            }
+                          },
+                          {
+                            "name": "Lead_List_Name",
+                            "type": "text",
+                            "label": "Lead List Name",
+                            "validate": {
+                              "max": 255
+                            }
+                          },
+                          {
+                            "name": "URL_Referrer",
+                            "type": "text",
+                            "label": "URL Referrer",
+                            "validate": {
+                              "max": 255
+                            }
+                          },
+                          {
+                            "name": "Webinars_Registered",
+                            "type": "select",
+                            "label": "Webinars Registered",
+                            "multiple": true
+                          },
+                          {
+                            "name": "Single_Line_25",
+                            "type": "text",
+                            "label": "Single Line 25",
+                            "validate": {
+                              "max": 255
+                            }
+                          },
+                          {
+                            "name": "First_Touch_Referrer",
+                            "type": "text",
+                            "label": "First Touch Referrer",
+                            "validate": {
+                              "max": 255
+                            }
+                          },
+                          {
+                            "name": "Latest_Webinar_Name",
+                            "type": "text",
+                            "label": "Latest Webinar Name",
+                            "validate": {
+                              "max": 255
+                            }
+                          },
+                          {
+                            "name": "Latest_Webinar_Join_URL",
+                            "type": "url",
+                            "label": "Latest Webinar Join URL",
+                            "validate": {
+                              "max": 450
+                            }
+                          },
+                          {
+                            "name": "Lemlist_Email_sent",
+                            "type": "boolean",
+                            "label": "Lemlist Email sent",
+                            "validate": {
+                              "max": 5
+                            }
+                          },
+                          {
+                            "name": "Company_research",
+                            "type": "url",
+                            "label": "Company research",
+                            "validate": {
+                              "max": 450
+                            }
+                          },
+                          {
+                            "name": "Primary_stablecoin_use_case",
+                            "type": "select",
+                            "label": "Primary stablecoin use case"
+                          },
+                          {
+                            "name": "Estimated_annual_stablecoin_transaction_volume",
+                            "type": "select",
+                            "label": "Estimated annual stablecoin transaction volume"
+                          },
+                          {
+                            "name": "Is_activated",
+                            "type": "boolean",
+                            "label": "Is activated",
+                            "validate": {
+                              "max": 5
+                            }
+                          },
+                          {
+                            "name": "Is_eligible",
+                            "type": "select",
+                            "label": "Is eligible"
+                          },
+                          {
+                            "name": "Standard_Currencies_FX_Rate",
+                            "type": "text",
+                            "label": "Standard Currencies FX Rate",
+                            "validate": {
+                              "max": 16
+                            }
+                          },
+                          {
+                            "name": "Extended_Currencies_FX_Rate",
+                            "type": "text",
+                            "label": "Extended Currencies FX Rate",
+                            "validate": {
+                              "max": 16
+                            }
+                          },
+                          {
+                            "name": "Pipeline",
+                            "type": "select",
+                            "label": "Pipeline"
+                          },
+                          {
+                            "name": "Partner_Status",
+                            "type": "select",
+                            "label": "Partner Status"
+                          },
+                          {
+                            "name": "Primary_use_case",
+                            "type": "select",
+                            "label": "Primary use case"
+                          },
+                          {
+                            "name": "Average_tenor_months",
+                            "type": "select",
+                            "label": "Average tenor (months)"
+                          },
+                          {
+                            "name": "Average_forward_value",
+                            "type": "select",
+                            "label": "Average forward value"
+                          },
+                          {
+                            "name": "No_of_forwards_booked_each_month",
+                            "type": "select",
+                            "label": "No of forwards booked each month"
+                          },
+                          {
+                            "name": "Most_important_feature",
+                            "type": "text",
+                            "label": "Most important feature"
+                          },
+                          {
+                            "name": "Main_use_case_for_forwards",
+                            "type": "text",
+                            "label": "Main use case for forwards",
+                            "multiline": true
+                          },
+                          {
+                            "name": "Existing_business_card_provider",
+                            "type": "text",
+                            "label": "Existing business card provider"
+                          },
+                          {
+                            "name": "Monthly_cross_border_card_spend",
+                            "type": "text",
+                            "label": "Monthly cross-border card spend"
+                          },
+                          {
+                            "name": "id",
+                            "type": "text",
+                            "label": "Object ID"
+                          }
+                        ],
+                        "designer": {
+                          "x": 1498,
+                          "y": -192
+                        }
+                      },
+                      "parameters": {
+                        "__IMTCONN__": 13660469
+                      }
+                    },
+                    {
+                      "id": 9,
+                      "filter": {
+                        "name": "Has campaign_id",
+                        "conditions": [
+                          [
+                            {
+                              "a": "{{ifempty(get(1.data; \"Zoho Campaign ID\"); 3.data.campaign_id; get(1.data; 3.data.campaign_id_source))}}",
+                              "o": "exist"
+                            }
+                          ]
+                        ]
+                      },
+                      "mapper": {
+                        "id": "{{ifempty(get(1.data; \"Zoho Campaign ID\"); 3.data.campaign_id; get(1.data; 3.data.campaign_id_source))}}",
+                        "module": "Contacts",
+                        "record_id": "{{6.id}}",
+                        "related_list_api_name": "Campaigns"
+                      },
+                      "module": "zohocrm:updateRelatedRecord",
+                      "onerror": [
+                        {
+                          "id": 602,
+                          "module": "builtin:Ignore",
+                          "version": 1,
+                          "metadata": {
+                            "designer": {
+                              "x": 1796,
+                              "y": -416
+                            }
+                          }
+                        }
+                      ],
+                      "version": 3,
+                      "metadata": {
+                        "designer": {
+                          "x": 1798,
+                          "y": -192
+                        }
+                      },
+                      "parameters": {
+                        "__IMTCONN__": 13660469
+                      }
+                    },
+                    {
+                      "id": 10,
+                      "mapper": {
+                        "key": "{{2.submission_id}}",
+                        "data": {
+                          "email": "{{lower(trim(1.data.Email))}}",
+                          "action": "contact_update",
+                          "status": "ok",
+                          "form_key": "{{3.data.form_key}}",
+                          "form_name": "{{1.name}}",
+                          "raw_payload": "{{toString(1.data)}}",
+                          "received_at": "{{1.submittedAt}}",
+                          "zoho_module": "Contacts",
+                          "error_message": "",
+                          "submission_id": "{{2.submission_id}}",
+                          "zoho_record_id": "{{6.id}}",
+                          "unmapped_fields": "",
+                          "normalized_payload": ""
+                        },
+                        "overwrite": true
+                      },
+                      "module": "datastore:AddRecord",
+                      "version": 1,
+                      "metadata": {
+                        "designer": {
+                          "x": 2098,
+                          "y": -192
+                        }
+                      },
+                      "parameters": {
+                        "datastore": 163356
+                      }
+                    }
+                  ]
+                },
+                {
+                  "flow": [
+                    {
+                      "id": 11,
+                      "filter": {
+                        "name": "No contact found",
+                        "conditions": [
+                          [
+                            {
+                              "a": "{{6.id}}",
+                              "o": "notexist"
+                            }
+                          ]
+                        ]
+                      },
+                      "mapper": {
+                        "limit": "1",
+                        "filter": [
+                          [
+                            {
+                              "a": "Email",
+                              "b": "{{lower(trim(1.data.Email))}}",
+                              "o": "text:equals"
+                            }
+                          ]
+                        ],
+                        "module": "Leads",
+                        "approved": "true"
+                      },
+                      "module": "zohocrm:searchObjects",
+                      "onerror": [
+                        {
+                          "id": 603,
+                          "module": "builtin:Ignore",
+                          "version": 1,
+                          "metadata": {
+                            "designer": {
+                              "x": 1488,
+                              "y": 547
+                            }
+                          }
+                        }
+                      ],
+                      "version": 3,
+                      "metadata": {
+                        "designer": {
+                          "x": 1500,
+                          "y": 250
+                        }
+                      },
+                      "parameters": {
+                        "__IMTCONN__": 13660469
+                      }
+                    },
+                    {
+                      "id": 12,
+                      "mapper": null,
+                      "module": "builtin:BasicRouter",
+                      "routes": [
+                        {
+                          "flow": [
+                            {
+                              "id": 13,
+                              "filter": {
+                                "name": "Lead found",
+                                "conditions": [
+                                  [
+                                    {
+                                      "a": "{{11.id}}",
+                                      "o": "exist"
+                                    }
+                                  ]
+                                ]
+                              },
+                              "mapper": {
+                                "id": "{{11.id}}",
+                                "Email": "{{lower(trim(1.data.Email))}}",
+                                "Owner": "{{ifempty(get(1.data; \"Zoho Lead Owner ID\"); 3.data.owner_id; get(1.data; 3.data.owner_id_source))}}",
+                                "Phone": "{{1.data.`Phone country code`}}{{1.data.`Phone number`}}",
+                                "module": "Leads",
+                                "Company": "{{ifempty(1.data.Company; 1.data.`Company Name`; 1.data.company)}}",
+                                "Country": "{{ifempty(1.data.Country; 1.data.country_of_incorporation)}}",
+                                "Website": "{{ifempty(1.data.Website; 1.data.`Company website`)}}",
+                                "Industry": "{{1.data.Industry}}",
+                                "Pipeline": "{{3.data.extra_static_fields.Pipeline}}",
+                                "UTM_Term": "{{1.data.utm_campaign}}",
+                                "GCLID_NEW": "{{1.data.gclid}}",
+                                "Last_Name": "{{ifempty(1.data.`Last name`; 1.data.last_name)}}",
+                                "First_Name": "{{ifempty(1.data.`First name`; 1.data.first_name; 1.data.name)}}",
+                                "UTM_Medium": "{{1.data.utm_medium}}",
+                                "Designation": "{{1.data.Position}}",
+                                "Lead_Source": "{{ifempty(get(1.data; \"Lead Source\"); 3.data.lead_source)}}",
+                                "Lead_Status": "{{3.data.lead_status}}",
+                                "UTM_Channel": "{{1.data.utm_source}}",
+                                "URL_Referrer": "{{1.data.url_referrer}}",
+                                "Partner_Status": "{{3.data.extra_static_fields.Partner_Status}}",
+                                "Plan_for_Sokin": "{{if(1.data.`checkbox-sokin-plan-input`; split(1.data.`checkbox-sokin-plan-input`; \", \"); emptyarray)}}",
+                                "Annual_turnover": "{{ifempty(1.data.`Annual revenue`; 1.data.annual_revenue; 1.data.annual_volume)}}",
+                                "Primary_use_case": "{{ifempty(1.data.`Major use`; 1.data.main_usecase; 1.data.`Main use case for forwards`)}}",
+                                "Average_tenor_months": "{{ifempty(1.data.`Average tenor`; 1.data.average_tenor_months)}}",
+                                "Average_forward_value": "{{ifempty(1.data.`Average forward value`; 1.data.average_forward_value)}}",
+                                "Most_important_feature": "{{ifempty(1.data.Features; 1.data.most_important_features)}}",
+                                "Main_use_case_for_forwards": "{{ifempty(1.data.`Main use case for forwards`; 1.data.main_usecase)}}",
+                                "Primary_stablecoin_use_case": "{{ifempty(get(1.data; \"Primary stablecoin use case\"); 1.data.primary_stablecoin_use_case)}}",
+                                "Existing_business_card_provider": "{{ifempty(1.data.`Use business card`; 1.data.current_provider)}}",
+                                "Monthly_cross_border_card_spend": "{{ifempty(1.data.`Monthly card spend`; 1.data.monthly_crossboarder_spend)}}",
+                                "No_of_forwards_booked_each_month": "{{ifempty(1.data.`Number of forwards booked`; 1.data.forwards_booked_per_month)}}",
+                                "Estimated_annual_stablecoin_transaction_volume": "{{ifempty(get(1.data; \"Estimated annual stablecoin transaction volume\"); 1.data.estimated_annual_stablecoin_volume)}}"
+                              },
+                              "module": "zohocrm:updateObject",
+                              "onerror": [
+                                {
+                                  "id": 604,
+                                  "module": "builtin:Ignore",
+                                  "version": 1,
+                                  "metadata": {
+                                    "designer": {
+                                      "x": 2133,
+                                      "y": 318
+                                    }
+                                  }
+                                }
+                              ],
+                              "version": 3,
+                              "metadata": {
+                                "expect": [
+                                  {
+                                    "name": "module",
+                                    "type": "select",
+                                    "label": "Module"
+                                  },
+                                  {
+                                    "name": "trigger",
+                                    "type": "select",
+                                    "label": "Trigger",
+                                    "multiple": true,
+                                    "validate": {
+                                      "enum": [
+                                        "workflow",
+                                        "approval",
+                                        "blueprint"
+                                      ]
+                                    }
+                                  },
+                                  {
+                                    "name": "Company",
+                                    "type": "text",
+                                    "validate": {
+                                      "max": 200
+                                    }
+                                  },
+                                  {
+                                    "name": "First_Name",
+                                    "type": "text",
+                                    "label": "First Name",
+                                    "validate": {
+                                      "max": 40
+                                    }
+                                  },
+                                  {
+                                    "name": "Last_Name",
+                                    "type": "text",
+                                    "label": "Last Name",
+                                    "validate": {
+                                      "max": 80
+                                    }
+                                  },
+                                  {
+                                    "name": "Phone",
+                                    "type": "text",
+                                    "validate": {
+                                      "max": 30
+                                    }
+                                  },
+                                  {
+                                    "name": "Website",
+                                    "type": "url",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Lead_Source",
+                                    "type": "select",
+                                    "label": "Lead Source"
+                                  },
+                                  {
+                                    "name": "Owner",
+                                    "type": "text",
+                                    "label": "Lead Owner",
+                                    "validate": {
+                                      "max": 120
+                                    }
+                                  },
+                                  {
+                                    "name": "Designation",
+                                    "type": "text",
+                                    "label": "Title",
+                                    "validate": {
+                                      "max": 100
+                                    }
+                                  },
+                                  {
+                                    "name": "Email",
+                                    "type": "email",
+                                    "validate": {
+                                      "max": 100
+                                    }
+                                  },
+                                  {
+                                    "name": "Mobile",
+                                    "type": "text",
+                                    "validate": {
+                                      "max": 30
+                                    }
+                                  },
+                                  {
+                                    "name": "Lead_Status",
+                                    "type": "select",
+                                    "label": "Lead Status"
+                                  },
+                                  {
+                                    "name": "Industry",
+                                    "type": "select"
+                                  },
+                                  {
+                                    "name": "Email_Opt_Out",
+                                    "type": "boolean",
+                                    "label": "Email Opt Out",
+                                    "validate": {
+                                      "max": 5
+                                    }
+                                  },
+                                  {
+                                    "name": "Salutation",
+                                    "type": "select"
+                                  },
+                                  {
+                                    "name": "Secondary_Email",
+                                    "type": "email",
+                                    "label": "Secondary Email",
+                                    "validate": {
+                                      "max": 100
+                                    }
+                                  },
+                                  {
+                                    "name": "Currency",
+                                    "type": "select"
+                                  },
+                                  {
+                                    "name": "Exchange_Rate",
+                                    "type": "text",
+                                    "label": "Exchange Rate",
+                                    "validate": {
+                                      "max": 19
+                                    }
+                                  },
+                                  {
+                                    "name": "Country",
+                                    "type": "text",
+                                    "validate": {
+                                      "max": 100
+                                    }
+                                  },
+                                  {
+                                    "name": "Description",
+                                    "type": "text",
+                                    "validate": {
+                                      "max": 32000
+                                    }
+                                  },
+                                  {
+                                    "name": "Partner_Name",
+                                    "type": "text",
+                                    "label": "Partner Name",
+                                    "validate": {
+                                      "max": 120
+                                    }
+                                  },
+                                  {
+                                    "name": "Plan_for_Sokin",
+                                    "type": "select",
+                                    "label": "Plan for Sokin",
+                                    "multiple": true
+                                  },
+                                  {
+                                    "name": "Annual_turnover",
+                                    "type": "select",
+                                    "label": "Annual turnover"
+                                  },
+                                  {
+                                    "name": "UTM_Channel",
+                                    "type": "text",
+                                    "label": "UTM Channel",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "UTM_Term",
+                                    "type": "text",
+                                    "label": "UTM Term",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "UTM_Medium",
+                                    "type": "text",
+                                    "label": "UTM Medium",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Referral_via",
+                                    "type": "text",
+                                    "label": "Referral via",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Years_of_Trading",
+                                    "type": "select",
+                                    "label": "Years of Trading"
+                                  },
+                                  {
+                                    "name": "Sokin_Minimum_Commitment_fx",
+                                    "type": "select",
+                                    "label": "Sokin Minimum Commitment  fx"
+                                  },
+                                  {
+                                    "name": "Region",
+                                    "type": "select"
+                                  },
+                                  {
+                                    "name": "FX_Volume_Range",
+                                    "type": "text",
+                                    "label": "FX Volume Range",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Fixed_Margin_Offered",
+                                    "type": "text",
+                                    "label": "Fixed Margin Offered",
+                                    "validate": {
+                                      "max": 16
+                                    }
+                                  },
+                                  {
+                                    "name": "Minimum_FX_commitment",
+                                    "type": "number",
+                                    "label": "Minimum FX commitment ($)"
+                                  },
+                                  {
+                                    "name": "Appointment_Request",
+                                    "type": "text",
+                                    "label": "Appointment Request",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "How_did_you_hear_about_us",
+                                    "type": "text",
+                                    "label": "How did you hear about us?",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Domestic_Transaction_ATV",
+                                    "type": "number",
+                                    "label": "Domestic Transaction ATV"
+                                  },
+                                  {
+                                    "name": "Custom_Rate_Request",
+                                    "type": "text",
+                                    "label": "Custom Rate Request",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "eCommerce_Plugin",
+                                    "type": "select",
+                                    "label": "eCommerce Plugin"
+                                  },
+                                  {
+                                    "name": "GCLID_NEW",
+                                    "type": "text",
+                                    "label": "GCLID NEW",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Ava_communication_count",
+                                    "type": "number",
+                                    "label": "Ava communication count"
+                                  },
+                                  {
+                                    "name": "Ava_activated",
+                                    "type": "select",
+                                    "label": "Ava activated"
+                                  },
+                                  {
+                                    "name": "Escalation_conversation_count",
+                                    "type": "number",
+                                    "label": "Escalation conversation count"
+                                  },
+                                  {
+                                    "name": "Is_escalated",
+                                    "type": "select",
+                                    "label": "Is escalated"
+                                  },
+                                  {
+                                    "name": "Monthly_transactions",
+                                    "type": "text",
+                                    "label": "Monthly transactions",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Online_revenue",
+                                    "type": "text",
+                                    "label": "Online revenue",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Payment_Capabilities",
+                                    "type": "select",
+                                    "label": "Payment Capabilities",
+                                    "multiple": true
+                                  },
+                                  {
+                                    "name": "International_visits",
+                                    "type": "text",
+                                    "label": "International visits",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Linkedin_URL",
+                                    "type": "text",
+                                    "label": "Linkedin URL",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Forward_Contract",
+                                    "type": "boolean",
+                                    "label": "Forward Contract",
+                                    "validate": {
+                                      "max": 5
+                                    }
+                                  },
+                                  {
+                                    "name": "Deactivate_Ava",
+                                    "type": "boolean",
+                                    "label": "Deactivate Ava",
+                                    "validate": {
+                                      "max": 5
+                                    }
+                                  },
+                                  {
+                                    "name": "gotowebinar__Number_of_Employees",
+                                    "type": "text",
+                                    "label": "Number of Employees",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "gotowebinar__Purchasing_Role",
+                                    "type": "text",
+                                    "label": "Purchasing Role",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "gotowebinar__Purchasing_Time_Frame",
+                                    "type": "text",
+                                    "label": "Purchasing Time Frame",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "gotowebinar__Questions_Comments",
+                                    "type": "text",
+                                    "label": "Questions & Comments",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Additional_Use_of_Sokin",
+                                    "type": "select",
+                                    "label": "Additional Use of Sokin",
+                                    "multiple": true
+                                  },
+                                  {
+                                    "name": "Other_Use_of_Sokin",
+                                    "type": "text",
+                                    "label": "Other Use of Sokin",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Status_Synced_to_Markting_Automation",
+                                    "time": false,
+                                    "type": "date",
+                                    "label": "Date Moved to Dashboard Access",
+                                    "validate": {
+                                      "max": 20
+                                    }
+                                  },
+                                  {
+                                    "name": "Meeting_Status",
+                                    "type": "select",
+                                    "label": "Meeting Status"
+                                  },
+                                  {
+                                    "name": "Lead_Campaign_Source",
+                                    "type": "text",
+                                    "label": "Lead Campaign Source",
+                                    "validate": {
+                                      "max": 120
+                                    }
+                                  },
+                                  {
+                                    "name": "Acquisition_channel",
+                                    "type": "select",
+                                    "label": "Acquisition channel"
+                                  },
+                                  {
+                                    "name": "Landing_Page",
+                                    "type": "url",
+                                    "label": "Landing Page",
+                                    "validate": {
+                                      "max": 450
+                                    }
+                                  },
+                                  {
+                                    "name": "Last_Call_Outcome_JustCall",
+                                    "type": "text",
+                                    "label": "Last Call Outcome (JustCall)",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Last_Missed_Call_Voicemail_JustCall",
+                                    "time": true,
+                                    "type": "date",
+                                    "label": "Last Missed Call / Voicemail (JustCall)",
+                                    "validate": {
+                                      "max": 120
+                                    }
+                                  },
+                                  {
+                                    "name": "Lead_Associated_BDM",
+                                    "spec": {
+                                      "name": "value",
+                                      "type": "text"
+                                    },
+                                    "type": "array",
+                                    "label": "Lead - Associated BDM",
+                                    "validate": {
+                                      "max": 20
+                                    }
+                                  },
+                                  {
+                                    "name": "Lead_List_Name",
+                                    "type": "text",
+                                    "label": "Lead List Name",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "URL_Referrer",
+                                    "type": "text",
+                                    "label": "URL Referrer",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Webinars_Registered",
+                                    "type": "select",
+                                    "label": "Webinars Registered",
+                                    "multiple": true
+                                  },
+                                  {
+                                    "name": "Single_Line_25",
+                                    "type": "text",
+                                    "label": "Single Line 25",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "First_Touch_Referrer",
+                                    "type": "text",
+                                    "label": "First Touch Referrer",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Latest_Webinar_Name",
+                                    "type": "text",
+                                    "label": "Latest Webinar Name",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Latest_Webinar_Join_URL",
+                                    "type": "url",
+                                    "label": "Latest Webinar Join URL",
+                                    "validate": {
+                                      "max": 450
+                                    }
+                                  },
+                                  {
+                                    "name": "Lemlist_Email_sent",
+                                    "type": "boolean",
+                                    "label": "Lemlist Email sent",
+                                    "validate": {
+                                      "max": 5
+                                    }
+                                  },
+                                  {
+                                    "name": "Company_research",
+                                    "type": "url",
+                                    "label": "Company research",
+                                    "validate": {
+                                      "max": 450
+                                    }
+                                  },
+                                  {
+                                    "name": "Primary_stablecoin_use_case",
+                                    "type": "select",
+                                    "label": "Primary stablecoin use case"
+                                  },
+                                  {
+                                    "name": "Estimated_annual_stablecoin_transaction_volume",
+                                    "type": "select",
+                                    "label": "Estimated annual stablecoin transaction volume"
+                                  },
+                                  {
+                                    "name": "Is_activated",
+                                    "type": "boolean",
+                                    "label": "Is activated",
+                                    "validate": {
+                                      "max": 5
+                                    }
+                                  },
+                                  {
+                                    "name": "Is_eligible",
+                                    "type": "select",
+                                    "label": "Is eligible"
+                                  },
+                                  {
+                                    "name": "Standard_Currencies_FX_Rate",
+                                    "type": "text",
+                                    "label": "Standard Currencies FX Rate",
+                                    "validate": {
+                                      "max": 16
+                                    }
+                                  },
+                                  {
+                                    "name": "Extended_Currencies_FX_Rate",
+                                    "type": "text",
+                                    "label": "Extended Currencies FX Rate",
+                                    "validate": {
+                                      "max": 16
+                                    }
+                                  },
+                                  {
+                                    "name": "Pipeline",
+                                    "type": "select",
+                                    "label": "Pipeline"
+                                  },
+                                  {
+                                    "name": "Partner_Status",
+                                    "type": "select",
+                                    "label": "Partner Status"
+                                  },
+                                  {
+                                    "name": "Primary_use_case",
+                                    "type": "select",
+                                    "label": "Primary use case"
+                                  },
+                                  {
+                                    "name": "Average_tenor_months",
+                                    "type": "select",
+                                    "label": "Average tenor (months)"
+                                  },
+                                  {
+                                    "name": "Average_forward_value",
+                                    "type": "select",
+                                    "label": "Average forward value"
+                                  },
+                                  {
+                                    "name": "No_of_forwards_booked_each_month",
+                                    "type": "select",
+                                    "label": "No of forwards booked each month"
+                                  },
+                                  {
+                                    "name": "Most_important_feature",
+                                    "type": "text",
+                                    "label": "Most important feature"
+                                  },
+                                  {
+                                    "name": "Main_use_case_for_forwards",
+                                    "type": "text",
+                                    "label": "Main use case for forwards",
+                                    "multiline": true
+                                  },
+                                  {
+                                    "name": "Existing_business_card_provider",
+                                    "type": "text",
+                                    "label": "Existing business card provider"
+                                  },
+                                  {
+                                    "name": "Monthly_cross_border_card_spend",
+                                    "type": "text",
+                                    "label": "Monthly cross-border card spend"
+                                  },
+                                  {
+                                    "name": "id",
+                                    "type": "text",
+                                    "label": "Object ID"
+                                  }
+                                ],
+                                "designer": {
+                                  "x": 2133,
+                                  "y": 118
+                                }
+                              },
+                              "parameters": {
+                                "__IMTCONN__": 13660469
+                              }
+                            },
+                            {
+                              "id": 14,
+                              "filter": {
+                                "name": "Has campaign_id",
+                                "conditions": [
+                                  [
+                                    {
+                                      "a": "{{ifempty(get(1.data; \"Zoho Campaign ID\"); 3.data.campaign_id; get(1.data; 3.data.campaign_id_source))}}",
+                                      "o": "exist"
+                                    }
+                                  ]
+                                ]
+                              },
+                              "mapper": {
+                                "id": "{{ifempty(get(1.data; \"Zoho Campaign ID\"); 3.data.campaign_id; get(1.data; 3.data.campaign_id_source))}}",
+                                "module": "Leads",
+                                "record_id": "{{11.id}}",
+                                "related_list_api_name": "Campaigns"
+                              },
+                              "module": "zohocrm:updateRelatedRecord",
+                              "onerror": [
+                                {
+                                  "id": 605,
+                                  "module": "builtin:Ignore",
+                                  "version": 1,
+                                  "metadata": {
+                                    "designer": {
+                                      "x": 2433,
+                                      "y": 318
+                                    }
+                                  }
+                                }
+                              ],
+                              "version": 3,
+                              "metadata": {
+                                "designer": {
+                                  "x": 2433,
+                                  "y": 118,
+                                  "name": "Add to campaign"
+                                }
+                              },
+                              "parameters": {
+                                "__IMTCONN__": 13660469
+                              }
+                            },
+                            {
+                              "id": 15,
+                              "mapper": {
+                                "key": "{{2.submission_id}}",
+                                "data": {
+                                  "email": "{{lower(trim(1.data.Email))}}",
+                                  "action": "lead_update",
+                                  "status": "ok",
+                                  "form_key": "{{3.data.form_key}}",
+                                  "form_name": "{{1.name}}",
+                                  "raw_payload": "{{toString(1.data)}}",
+                                  "received_at": "{{1.submittedAt}}",
+                                  "zoho_module": "Leads",
+                                  "error_message": "",
+                                  "submission_id": "{{2.submission_id}}",
+                                  "zoho_record_id": "{{11.id}}",
+                                  "unmapped_fields": "",
+                                  "normalized_payload": ""
+                                },
+                                "overwrite": true
+                              },
+                              "module": "datastore:AddRecord",
+                              "version": 1,
+                              "metadata": {
+                                "designer": {
+                                  "x": 2733,
+                                  "y": 118
+                                }
+                              },
+                              "parameters": {
+                                "datastore": 163356
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "flow": [
+                            {
+                              "id": 16,
+                              "filter": {
+                                "name": "No lead — create",
+                                "conditions": [
+                                  [
+                                    {
+                                      "a": "{{11.id}}",
+                                      "o": "notexist"
+                                    }
+                                  ]
+                                ]
+                              },
+                              "mapper": {
+                                "Email": "{{lower(trim(1.data.Email))}}",
+                                "Owner": "{{ifempty(get(1.data; \"Zoho Lead Owner ID\"); 3.data.owner_id; get(1.data; 3.data.owner_id_source))}}",
+                                "Phone": "{{1.data.`Phone country code`}}{{1.data.`Phone number`}}",
+                                "module": "Leads",
+                                "Company": "{{ifempty(1.data.Company; 1.data.`Company Name`; 1.data.company)}}",
+                                "Country": "{{ifempty(1.data.Country; 1.data.country_of_incorporation)}}",
+                                "Website": "{{ifempty(1.data.Website; 1.data.`Company website`)}}",
+                                "Industry": "{{1.data.Industry}}",
+                                "Pipeline": "{{3.data.extra_static_fields.Pipeline}}",
+                                "UTM_Term": "{{1.data.utm_campaign}}",
+                                "GCLID_NEW": "{{1.data.gclid}}",
+                                "Last_Name": "{{ifempty(1.data.`Last name`; 1.data.last_name)}}",
+                                "First_Name": "{{ifempty(1.data.`First name`; 1.data.first_name; 1.data.name)}}",
+                                "UTM_Medium": "{{1.data.utm_medium}}",
+                                "Designation": "{{1.data.Position}}",
+                                "Lead_Source": "{{ifempty(get(1.data; \"Lead Source\"); 3.data.lead_source)}}",
+                                "Lead_Status": "{{3.data.lead_status}}",
+                                "UTM_Channel": "{{1.data.utm_source}}",
+                                "URL_Referrer": "{{1.data.url_referrer}}",
+                                "Partner_Status": "{{3.data.extra_static_fields.Partner_Status}}",
+                                "Plan_for_Sokin": "{{if(1.data.`checkbox-sokin-plan-input`; split(1.data.`checkbox-sokin-plan-input`; \", \"); emptyarray)}}",
+                                "Annual_turnover": "{{ifempty(1.data.`Annual revenue`; 1.data.annual_revenue; 1.data.annual_volume)}}",
+                                "Primary_use_case": "{{ifempty(1.data.`Major use`; 1.data.main_usecase; 1.data.`Main use case for forwards`)}}",
+                                "Average_tenor_months": "{{ifempty(1.data.`Average tenor`; 1.data.average_tenor_months)}}",
+                                "Average_forward_value": "{{ifempty(1.data.`Average forward value`; 1.data.average_forward_value)}}",
+                                "Most_important_feature": "{{ifempty(1.data.Features; 1.data.most_important_features)}}",
+                                "Main_use_case_for_forwards": "{{ifempty(1.data.`Main use case for forwards`; 1.data.main_usecase)}}",
+                                "Primary_stablecoin_use_case": "{{ifempty(get(1.data; \"Primary stablecoin use case\"); 1.data.primary_stablecoin_use_case)}}",
+                                "Existing_business_card_provider": "{{ifempty(1.data.`Use business card`; 1.data.current_provider)}}",
+                                "Monthly_cross_border_card_spend": "{{ifempty(1.data.`Monthly card spend`; 1.data.monthly_crossboarder_spend)}}",
+                                "No_of_forwards_booked_each_month": "{{ifempty(1.data.`Number of forwards booked`; 1.data.forwards_booked_per_month)}}",
+                                "Estimated_annual_stablecoin_transaction_volume": "{{ifempty(get(1.data; \"Estimated annual stablecoin transaction volume\"); 1.data.estimated_annual_stablecoin_volume)}}"
+                              },
+                              "module": "zohocrm:createObject",
+                              "onerror": [
+                                {
+                                  "id": 606,
+                                  "module": "builtin:Ignore",
+                                  "version": 1,
+                                  "metadata": {
+                                    "designer": {
+                                      "x": 2109,
+                                      "y": 750
+                                    }
+                                  }
+                                }
+                              ],
+                              "version": 3,
+                              "metadata": {
+                                "expect": [
+                                  {
+                                    "name": "module",
+                                    "type": "select",
+                                    "label": "Module"
+                                  },
+                                  {
+                                    "name": "trigger",
+                                    "type": "select",
+                                    "label": "Trigger",
+                                    "multiple": true,
+                                    "validate": {
+                                      "enum": [
+                                        "workflow",
+                                        "approval",
+                                        "blueprint"
+                                      ]
+                                    }
+                                  },
+                                  {
+                                    "name": "Company",
+                                    "type": "text",
+                                    "validate": {
+                                      "max": 200
+                                    }
+                                  },
+                                  {
+                                    "name": "First_Name",
+                                    "type": "text",
+                                    "label": "First Name",
+                                    "validate": {
+                                      "max": 40
+                                    }
+                                  },
+                                  {
+                                    "name": "Last_Name",
+                                    "type": "text",
+                                    "label": "Last Name",
+                                    "validate": {
+                                      "max": 80
+                                    }
+                                  },
+                                  {
+                                    "name": "Phone",
+                                    "type": "text",
+                                    "validate": {
+                                      "max": 30
+                                    }
+                                  },
+                                  {
+                                    "name": "Website",
+                                    "type": "url",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Lead_Source",
+                                    "type": "select",
+                                    "label": "Lead Source"
+                                  },
+                                  {
+                                    "name": "Owner",
+                                    "type": "text",
+                                    "label": "Lead Owner",
+                                    "validate": {
+                                      "max": 120
+                                    }
+                                  },
+                                  {
+                                    "name": "Designation",
+                                    "type": "text",
+                                    "label": "Title",
+                                    "validate": {
+                                      "max": 100
+                                    }
+                                  },
+                                  {
+                                    "name": "Email",
+                                    "type": "email",
+                                    "validate": {
+                                      "max": 100
+                                    }
+                                  },
+                                  {
+                                    "name": "Mobile",
+                                    "type": "text",
+                                    "validate": {
+                                      "max": 30
+                                    }
+                                  },
+                                  {
+                                    "name": "Lead_Status",
+                                    "type": "select",
+                                    "label": "Lead Status"
+                                  },
+                                  {
+                                    "name": "Industry",
+                                    "type": "select"
+                                  },
+                                  {
+                                    "name": "Email_Opt_Out",
+                                    "type": "boolean",
+                                    "label": "Email Opt Out",
+                                    "validate": {
+                                      "max": 5
+                                    }
+                                  },
+                                  {
+                                    "name": "Salutation",
+                                    "type": "select"
+                                  },
+                                  {
+                                    "name": "Secondary_Email",
+                                    "type": "email",
+                                    "label": "Secondary Email",
+                                    "validate": {
+                                      "max": 100
+                                    }
+                                  },
+                                  {
+                                    "name": "Currency",
+                                    "type": "select"
+                                  },
+                                  {
+                                    "name": "Exchange_Rate",
+                                    "type": "text",
+                                    "label": "Exchange Rate",
+                                    "validate": {
+                                      "max": 19
+                                    }
+                                  },
+                                  {
+                                    "name": "Country",
+                                    "type": "text",
+                                    "validate": {
+                                      "max": 100
+                                    }
+                                  },
+                                  {
+                                    "name": "Description",
+                                    "type": "text",
+                                    "validate": {
+                                      "max": 32000
+                                    }
+                                  },
+                                  {
+                                    "name": "Partner_Name",
+                                    "type": "text",
+                                    "label": "Partner Name",
+                                    "validate": {
+                                      "max": 120
+                                    }
+                                  },
+                                  {
+                                    "name": "Plan_for_Sokin",
+                                    "type": "select",
+                                    "label": "Plan for Sokin",
+                                    "multiple": true
+                                  },
+                                  {
+                                    "name": "Annual_turnover",
+                                    "type": "select",
+                                    "label": "Annual turnover"
+                                  },
+                                  {
+                                    "name": "UTM_Channel",
+                                    "type": "text",
+                                    "label": "UTM Channel",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "UTM_Term",
+                                    "type": "text",
+                                    "label": "UTM Term",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "UTM_Medium",
+                                    "type": "text",
+                                    "label": "UTM Medium",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Referral_via",
+                                    "type": "text",
+                                    "label": "Referral via",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Years_of_Trading",
+                                    "type": "select",
+                                    "label": "Years of Trading"
+                                  },
+                                  {
+                                    "name": "Sokin_Minimum_Commitment_fx",
+                                    "type": "select",
+                                    "label": "Sokin Minimum Commitment  fx"
+                                  },
+                                  {
+                                    "name": "Region",
+                                    "type": "select"
+                                  },
+                                  {
+                                    "name": "FX_Volume_Range",
+                                    "type": "text",
+                                    "label": "FX Volume Range",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Fixed_Margin_Offered",
+                                    "type": "text",
+                                    "label": "Fixed Margin Offered",
+                                    "validate": {
+                                      "max": 16
+                                    }
+                                  },
+                                  {
+                                    "name": "Minimum_FX_commitment",
+                                    "type": "number",
+                                    "label": "Minimum FX commitment ($)"
+                                  },
+                                  {
+                                    "name": "Appointment_Request",
+                                    "type": "text",
+                                    "label": "Appointment Request",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "How_did_you_hear_about_us",
+                                    "type": "text",
+                                    "label": "How did you hear about us?",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Domestic_Transaction_ATV",
+                                    "type": "number",
+                                    "label": "Domestic Transaction ATV"
+                                  },
+                                  {
+                                    "name": "Custom_Rate_Request",
+                                    "type": "text",
+                                    "label": "Custom Rate Request",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "eCommerce_Plugin",
+                                    "type": "select",
+                                    "label": "eCommerce Plugin"
+                                  },
+                                  {
+                                    "name": "GCLID_NEW",
+                                    "type": "text",
+                                    "label": "GCLID NEW",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Ava_communication_count",
+                                    "type": "number",
+                                    "label": "Ava communication count"
+                                  },
+                                  {
+                                    "name": "Ava_activated",
+                                    "type": "select",
+                                    "label": "Ava activated"
+                                  },
+                                  {
+                                    "name": "Escalation_conversation_count",
+                                    "type": "number",
+                                    "label": "Escalation conversation count"
+                                  },
+                                  {
+                                    "name": "Is_escalated",
+                                    "type": "select",
+                                    "label": "Is escalated"
+                                  },
+                                  {
+                                    "name": "Monthly_transactions",
+                                    "type": "text",
+                                    "label": "Monthly transactions",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Online_revenue",
+                                    "type": "text",
+                                    "label": "Online revenue",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Payment_Capabilities",
+                                    "type": "select",
+                                    "label": "Payment Capabilities",
+                                    "multiple": true
+                                  },
+                                  {
+                                    "name": "International_visits",
+                                    "type": "text",
+                                    "label": "International visits",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Linkedin_URL",
+                                    "type": "text",
+                                    "label": "Linkedin URL",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Forward_Contract",
+                                    "type": "boolean",
+                                    "label": "Forward Contract",
+                                    "validate": {
+                                      "max": 5
+                                    }
+                                  },
+                                  {
+                                    "name": "Deactivate_Ava",
+                                    "type": "boolean",
+                                    "label": "Deactivate Ava",
+                                    "validate": {
+                                      "max": 5
+                                    }
+                                  },
+                                  {
+                                    "name": "gotowebinar__Number_of_Employees",
+                                    "type": "text",
+                                    "label": "Number of Employees",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "gotowebinar__Purchasing_Role",
+                                    "type": "text",
+                                    "label": "Purchasing Role",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "gotowebinar__Purchasing_Time_Frame",
+                                    "type": "text",
+                                    "label": "Purchasing Time Frame",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "gotowebinar__Questions_Comments",
+                                    "type": "text",
+                                    "label": "Questions & Comments",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Additional_Use_of_Sokin",
+                                    "type": "select",
+                                    "label": "Additional Use of Sokin",
+                                    "multiple": true
+                                  },
+                                  {
+                                    "name": "Other_Use_of_Sokin",
+                                    "type": "text",
+                                    "label": "Other Use of Sokin",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Status_Synced_to_Markting_Automation",
+                                    "time": false,
+                                    "type": "date",
+                                    "label": "Date Moved to Dashboard Access",
+                                    "validate": {
+                                      "max": 20
+                                    }
+                                  },
+                                  {
+                                    "name": "Meeting_Status",
+                                    "type": "select",
+                                    "label": "Meeting Status"
+                                  },
+                                  {
+                                    "name": "Lead_Campaign_Source",
+                                    "type": "text",
+                                    "label": "Lead Campaign Source",
+                                    "validate": {
+                                      "max": 120
+                                    }
+                                  },
+                                  {
+                                    "name": "Acquisition_channel",
+                                    "type": "select",
+                                    "label": "Acquisition channel"
+                                  },
+                                  {
+                                    "name": "Landing_Page",
+                                    "type": "url",
+                                    "label": "Landing Page",
+                                    "validate": {
+                                      "max": 450
+                                    }
+                                  },
+                                  {
+                                    "name": "Last_Call_Outcome_JustCall",
+                                    "type": "text",
+                                    "label": "Last Call Outcome (JustCall)",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Last_Missed_Call_Voicemail_JustCall",
+                                    "time": true,
+                                    "type": "date",
+                                    "label": "Last Missed Call / Voicemail (JustCall)",
+                                    "validate": {
+                                      "max": 120
+                                    }
+                                  },
+                                  {
+                                    "name": "Lead_Associated_BDM",
+                                    "spec": {
+                                      "name": "value",
+                                      "type": "text"
+                                    },
+                                    "type": "array",
+                                    "label": "Lead - Associated BDM",
+                                    "validate": {
+                                      "max": 20
+                                    }
+                                  },
+                                  {
+                                    "name": "Lead_List_Name",
+                                    "type": "text",
+                                    "label": "Lead List Name",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "URL_Referrer",
+                                    "type": "text",
+                                    "label": "URL Referrer",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Webinars_Registered",
+                                    "type": "select",
+                                    "label": "Webinars Registered",
+                                    "multiple": true
+                                  },
+                                  {
+                                    "name": "Single_Line_25",
+                                    "type": "text",
+                                    "label": "Single Line 25",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "First_Touch_Referrer",
+                                    "type": "text",
+                                    "label": "First Touch Referrer",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Latest_Webinar_Name",
+                                    "type": "text",
+                                    "label": "Latest Webinar Name",
+                                    "validate": {
+                                      "max": 255
+                                    }
+                                  },
+                                  {
+                                    "name": "Latest_Webinar_Join_URL",
+                                    "type": "url",
+                                    "label": "Latest Webinar Join URL",
+                                    "validate": {
+                                      "max": 450
+                                    }
+                                  },
+                                  {
+                                    "name": "Lemlist_Email_sent",
+                                    "type": "boolean",
+                                    "label": "Lemlist Email sent",
+                                    "validate": {
+                                      "max": 5
+                                    }
+                                  },
+                                  {
+                                    "name": "Company_research",
+                                    "type": "url",
+                                    "label": "Company research",
+                                    "validate": {
+                                      "max": 450
+                                    }
+                                  },
+                                  {
+                                    "name": "Primary_stablecoin_use_case",
+                                    "type": "select",
+                                    "label": "Primary stablecoin use case"
+                                  },
+                                  {
+                                    "name": "Estimated_annual_stablecoin_transaction_volume",
+                                    "type": "select",
+                                    "label": "Estimated annual stablecoin transaction volume"
+                                  },
+                                  {
+                                    "name": "Is_activated",
+                                    "type": "boolean",
+                                    "label": "Is activated",
+                                    "validate": {
+                                      "max": 5
+                                    }
+                                  },
+                                  {
+                                    "name": "Is_eligible",
+                                    "type": "select",
+                                    "label": "Is eligible"
+                                  },
+                                  {
+                                    "name": "Standard_Currencies_FX_Rate",
+                                    "type": "text",
+                                    "label": "Standard Currencies FX Rate",
+                                    "validate": {
+                                      "max": 16
+                                    }
+                                  },
+                                  {
+                                    "name": "Extended_Currencies_FX_Rate",
+                                    "type": "text",
+                                    "label": "Extended Currencies FX Rate",
+                                    "validate": {
+                                      "max": 16
+                                    }
+                                  },
+                                  {
+                                    "name": "Pipeline",
+                                    "type": "select",
+                                    "label": "Pipeline"
+                                  },
+                                  {
+                                    "name": "Partner_Status",
+                                    "type": "select",
+                                    "label": "Partner Status"
+                                  },
+                                  {
+                                    "name": "Primary_use_case",
+                                    "type": "select",
+                                    "label": "Primary use case"
+                                  },
+                                  {
+                                    "name": "Average_tenor_months",
+                                    "type": "select",
+                                    "label": "Average tenor (months)"
+                                  },
+                                  {
+                                    "name": "Average_forward_value",
+                                    "type": "select",
+                                    "label": "Average forward value"
+                                  },
+                                  {
+                                    "name": "No_of_forwards_booked_each_month",
+                                    "type": "select",
+                                    "label": "No of forwards booked each month"
+                                  },
+                                  {
+                                    "name": "Most_important_feature",
+                                    "type": "text",
+                                    "label": "Most important feature"
+                                  },
+                                  {
+                                    "name": "Main_use_case_for_forwards",
+                                    "type": "text",
+                                    "label": "Main use case for forwards",
+                                    "multiline": true
+                                  },
+                                  {
+                                    "name": "Existing_business_card_provider",
+                                    "type": "text",
+                                    "label": "Existing business card provider"
+                                  },
+                                  {
+                                    "name": "Monthly_cross_border_card_spend",
+                                    "type": "text",
+                                    "label": "Monthly cross-border card spend"
+                                  },
+                                  {
+                                    "name": "id",
+                                    "type": "text",
+                                    "label": "Object ID"
+                                  }
+                                ],
+                                "designer": {
+                                  "x": 2109,
+                                  "y": 550
+                                }
+                              },
+                              "parameters": {
+                                "__IMTCONN__": 13660469
+                              }
+                            },
+                            {
+                              "id": 17,
+                              "filter": {
+                                "name": "Has campaign_id",
+                                "conditions": [
+                                  [
+                                    {
+                                      "a": "{{ifempty(get(1.data; \"Zoho Campaign ID\"); 3.data.campaign_id; get(1.data; 3.data.campaign_id_source))}}",
+                                      "o": "exist"
+                                    }
+                                  ]
+                                ]
+                              },
+                              "mapper": {
+                                "id": "{{ifempty(get(1.data; \"Zoho Campaign ID\"); 3.data.campaign_id; get(1.data; 3.data.campaign_id_source))}}",
+                                "module": "Leads",
+                                "record_id": "{{16.Id}}",
+                                "related_list_api_name": "Campaigns"
+                              },
+                              "module": "zohocrm:updateRelatedRecord",
+                              "onerror": [
+                                {
+                                  "id": 607,
+                                  "module": "builtin:Ignore",
+                                  "version": 1,
+                                  "metadata": {
+                                    "designer": {
+                                      "x": 2409,
+                                      "y": 750
+                                    }
+                                  }
+                                }
+                              ],
+                              "version": 3,
+                              "metadata": {
+                                "designer": {
+                                  "x": 2409,
+                                  "y": 550,
+                                  "name": "Add to campaign"
+                                }
+                              },
+                              "parameters": {
+                                "__IMTCONN__": 13660469
+                              }
+                            },
+                            {
+                              "id": 18,
+                              "mapper": {
+                                "key": "{{2.submission_id}}",
+                                "data": {
+                                  "email": "{{lower(trim(1.data.Email))}}",
+                                  "action": "lead_create",
+                                  "status": "ok",
+                                  "form_key": "{{3.data.form_key}}",
+                                  "form_name": "{{1.name}}",
+                                  "raw_payload": "{{toString(1.data)}}",
+                                  "received_at": "{{1.submittedAt}}",
+                                  "zoho_module": "Leads",
+                                  "error_message": "",
+                                  "submission_id": "{{2.submission_id}}",
+                                  "zoho_record_id": "{{16.Id}}",
+                                  "unmapped_fields": "",
+                                  "normalized_payload": ""
+                                },
+                                "overwrite": true
+                              },
+                              "module": "datastore:AddRecord",
+                              "version": 1,
+                              "metadata": {
+                                "designer": {
+                                  "x": 2709,
+                                  "y": 550
+                                }
+                              },
+                              "parameters": {
+                                "datastore": 163356
+                              }
+                            }
+                          ]
+                        }
+                      ],
+                      "version": 1,
+                      "metadata": {
+                        "designer": {
+                          "x": 1800,
+                          "y": 250
+                        }
+                      }
+                    }
+                  ]
+                }
+              ],
+              "version": 1,
+              "metadata": {
+                "designer": {
+                  "x": 1200,
+                  "y": 100
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "version": 1,
+      "metadata": {
+        "designer": {
+          "x": 670,
+          "y": 0
+        }
+      }
+    }
+  ],
+  "name": "Webflow → Zoho Generic Intake",
+  "metadata": {
+    "zone": "eu2.make.com",
+    "instant": true,
+    "version": 1,
+    "designer": {
+      "orphans": []
+    },
+    "scenario": {
+      "dlq": false,
+      "dataloss": false,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "roundtrips": 1,
+      "sequential": false,
+      "confidential": false,
+      "freshVariables": false,
+      "autoCommitTriggerLast": true
+    }
+  }
+}
